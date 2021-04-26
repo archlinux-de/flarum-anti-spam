@@ -71,7 +71,7 @@ class RegistrationHandler
                 }
             }
 
-            if ($score < 0) {
+            if ($score < 1) {
                 $this->logger->alert(
                     sprintf('Anti-Spam: Blocked user agent "%s" from %s with score %d', $userAgent, $country, $score)
                 );
