@@ -110,11 +110,21 @@ class RegistrationHandler
 
     private function isUserAgentBlocked(string $userAgent): bool
     {
-        return in_array($userAgent, $this->userAgentBlockList);
+        foreach ($this->userAgentBlockList as $subString) {
+            if (stripos($userAgent, $subString) !== false) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private function isUserAgentAllowed(string $userAgent): bool
     {
-        return in_array($userAgent, $this->userAgentAllowList);
+        foreach ($this->userAgentAllowList as $subString) {
+            if (stripos($userAgent, $subString) !== false) {
+                return true;
+            }
+        }
+        return false;
     }
 }
