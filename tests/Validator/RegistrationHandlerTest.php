@@ -27,6 +27,7 @@ class RegistrationHandlerTest extends TestCase
     {
         $this->config = $this->createMock(Config::class);
         $this->geoIpReader = $this->createMock(Reader::class);
+        unset($_SERVER['REMOTE_ADDR']);
         unset($_SERVER['HTTP_USER_AGENT']);
     }
 
@@ -51,6 +52,8 @@ class RegistrationHandlerTest extends TestCase
 
     public function testBlockByDefault(): void
     {
+        $_SERVER['REMOTE_ADDR'] = '123.0.0.1';
+
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Anti-Spam score: 0');
         $this->createRegistrationHandler()->handle($this->createSavingEvent());
@@ -58,6 +61,8 @@ class RegistrationHandlerTest extends TestCase
 
     public function testCountryCanBeBlocked(): void
     {
+        $_SERVER['REMOTE_ADDR'] = '123.0.0.1';
+
         $this->config
             ->expects($this->once())
             ->method('offsetGet')
@@ -92,6 +97,8 @@ class RegistrationHandlerTest extends TestCase
 
     public function testRecoverIfCountryIsUnknown(): void
     {
+        $_SERVER['REMOTE_ADDR'] = '123.0.0.1';
+
         $this->geoIpReader
             ->expects($this->once())
             ->method('get')
@@ -104,6 +111,8 @@ class RegistrationHandlerTest extends TestCase
 
     public function testUserAgentCanBeBlocked(): void
     {
+        $_SERVER['REMOTE_ADDR'] = '123.0.0.1';
+
         $this->config
             ->expects($this->once())
             ->method('offsetGet')
@@ -134,9 +143,9 @@ class RegistrationHandlerTest extends TestCase
             ->expects($this->once())
             ->method('offsetGet')
             ->with('anti_spam')
-            ->willReturn(['ip_blocked' => ['127.0.0.0/8']]);
+            ->willReturn(['ip_blocked' => ['123.0.0.0/8']]);
 
-        $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+        $_SERVER['REMOTE_ADDR'] = '123.0.0.1';
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Anti-Spam score: -1');
         $this->createRegistrationHandler()->handle($this->createSavingEvent());

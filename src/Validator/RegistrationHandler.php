@@ -26,7 +26,7 @@ class RegistrationHandler
     private array $countryBlockList = [];
 
     /** @var string[] */
-    private array $ipAllowList = [];
+    private array $ipAllowList = ['10.0.0.0/8', '127.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '::1/128'];
 
     /** @var string[] */
     private array $ipBlockList = [];
