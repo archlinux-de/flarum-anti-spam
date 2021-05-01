@@ -7,6 +7,7 @@ use Flarum\Foundation\ValidationException;
 use Flarum\User\Event\Saving;
 use MaxMind\Db\Reader;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\IpUtils;
 
 class RegistrationHandler
 {
@@ -17,6 +18,8 @@ class RegistrationHandler
     private array $userAgentBlockList = [];
     private array $countryAllowList = [];
     private array $countryBlockList = [];
+    private array $ipAllowList = [];
+    private array $ipBlockList = [];
 
     private LoggerInterface $logger;
 
@@ -44,6 +47,13 @@ class RegistrationHandler
             $this->geoIpDatabase = $antiSpamConfig['geoip_database'];
         }
         $this->geoIpReader = new Reader($this->geoIpDatabase);
+
+        if (isset($antiSpamConfig['ip_allowed']) && $antiSpamConfig['ip_allowed']) {
+            $this->ipAllowList = $antiSpamConfig['ip_allowed'];
+        }
+        if (isset($antiSpamConfig['ip_blocked']) && $antiSpamConfig['ip_blocked']) {
+            $this->ipBlockList = $antiSpamConfig['ip_blocked'];
+        }
     }
 
     public function handle(Saving $event)
@@ -51,12 +61,22 @@ class RegistrationHandler
         $score = 0;
 
         if (!$event->user->exists) {
-            $country = $this->getCountry();
-            if ($country) {
-                if ($this->isCountryBlocked($country)) {
+            $userIp = $_SERVER['REMOTE_ADDR'];
+            if ($userIp) {
+                $country = $this->getCountry($userIp);
+                if ($country) {
+                    if ($this->isCountryBlocked($country)) {
+                        $score--;
+                    }
+                    if ($this->isCountryAllowed($country)) {
+                        $score++;
+                    }
+                }
+
+                if ($this->isIpBlocked($userIp)) {
                     $score--;
                 }
-                if ($this->isCountryAllowed($country)) {
+                if ($this->isIpAllowed($userIp)) {
                     $score++;
                 }
             }
@@ -80,10 +100,10 @@ class RegistrationHandler
         }
     }
 
-    private function getCountry(): ?string
+    private function getCountry(string $ip): ?string
     {
         try {
-            $response = $this->geoIpReader->get($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
+            $response = $this->geoIpReader->get($ip);
             if (isset($response['country']['iso_code'])) {
                 return $response['country']['iso_code'];
             }
@@ -126,5 +146,15 @@ class RegistrationHandler
             }
         }
         return false;
+    }
+
+    private function isIpBlocked(string $ip): bool
+    {
+        return IpUtils::checkIp($ip, $this->ipBlockList);
+    }
+
+    private function isIpAllowed(string $ip): bool
+    {
+        return IpUtils::checkIp($ip, $this->ipAllowList);
     }
 }
