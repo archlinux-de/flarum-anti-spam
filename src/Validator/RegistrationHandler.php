@@ -11,19 +11,29 @@ use Symfony\Component\HttpFoundation\IpUtils;
 
 class RegistrationHandler
 {
-    private string $geoIpDatabase = '/usr/share/GeoIP/GeoLite2-Country.mmdb';
     private Reader $geoIpReader;
 
+    /** @var string[] */
     private array $userAgentAllowList = [];
+
+    /** @var string[] */
     private array $userAgentBlockList = [];
+
+    /** @var string[] */
     private array $countryAllowList = [];
+
+    /** @var string[] */
     private array $countryBlockList = [];
+
+    /** @var string[] */
     private array $ipAllowList = [];
+
+    /** @var string[] */
     private array $ipBlockList = [];
 
     private LoggerInterface $logger;
 
-    public function __construct(Config $config, LoggerInterface $logger)
+    public function __construct(Config $config, LoggerInterface $logger, GeoIpReaderFactory $geoIpReaderFactory)
     {
         $this->logger = $logger;
 
@@ -43,25 +53,22 @@ class RegistrationHandler
             $this->countryBlockList = $antiSpamConfig['country_blocked'];
         }
 
-        if (isset($antiSpamConfig['geoip_database']) && $antiSpamConfig['geoip_database']) {
-            $this->geoIpDatabase = $antiSpamConfig['geoip_database'];
-        }
-        $this->geoIpReader = new Reader($this->geoIpDatabase);
-
         if (isset($antiSpamConfig['ip_allowed']) && $antiSpamConfig['ip_allowed']) {
             $this->ipAllowList = $antiSpamConfig['ip_allowed'];
         }
         if (isset($antiSpamConfig['ip_blocked']) && $antiSpamConfig['ip_blocked']) {
             $this->ipBlockList = $antiSpamConfig['ip_blocked'];
         }
+
+        $this->geoIpReader = $geoIpReaderFactory->createReader();
     }
 
-    public function handle(Saving $event)
+    public function handle(Saving $event): void
     {
         $score = 0;
 
         if (!$event->user->exists) {
-            $userIp = $_SERVER['REMOTE_ADDR'];
+            $userIp = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
             if ($userIp) {
                 $country = $this->getCountry($userIp);
                 if ($country) {
@@ -93,9 +100,14 @@ class RegistrationHandler
 
             if ($score < 1) {
                 $this->logger->alert(
-                    sprintf('Anti-Spam: Blocked user agent "%s" from %s with score %d', $userAgent, $country, $score)
+                    sprintf(
+                        'Anti-Spam: Blocked user agent "%s" from %s with score %d',
+                        $userAgent,
+                        $country ?? '__',
+                        $score
+                    )
                 );
-                throw new ValidationException([sprintf('Anti-Spam protection')]);
+                throw new ValidationException([sprintf('Anti-Spam score: %d', $score)]);
             }
         }
     }
