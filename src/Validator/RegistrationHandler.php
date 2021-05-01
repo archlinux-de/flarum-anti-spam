@@ -108,6 +108,7 @@ class RegistrationHandler
                 return $response['country']['iso_code'];
             }
         } catch (\Exception $e) {
+            $this->logger->error($e->getMessage());
         }
 
         return null;
