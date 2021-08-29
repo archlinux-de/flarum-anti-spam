@@ -2,7 +2,6 @@
 
 namespace ArchLinux\AntiSpam;
 
-use ArchLinux\AntiSpam\Console\ListCountryStatistics;
 use ArchLinux\AntiSpam\Validator\RegistrationHandler;
 use Flarum\Extend;
 use Flarum\User\Event\Saving;

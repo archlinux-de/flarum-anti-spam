@@ -1,6 +1,6 @@
 <?php
 
-namespace ArchLinux\AntiSpam\Tests\Validator;
+namespace ArchLinux\AntiSpam\Test\Validator;
 
 use ArchLinux\AntiSpam\Validator\GeoIpReaderFactory;
 use ArchLinux\AntiSpam\Validator\RegistrationHandler;
