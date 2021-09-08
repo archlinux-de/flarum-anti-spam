@@ -100,14 +100,20 @@ class RegistrationHandler
 
             if ($score < 1) {
                 $this->logger->alert(
-                    sprintf(
-                        'Anti-Spam: Blocked user agent "%s" from %s with score %d',
-                        $userAgent,
-                        $country ?? '__',
-                        $score
-                    )
+                    'Anti-Spam blocked user registration',
+                    [
+                        'username' => $event->user->username,
+                        'email' => $event->user->email,
+                        'ip' => $userIp ?? '-',
+                        'country' => $country ?? '-',
+                        'agent' => $userAgent ?? '-',
+                        'score' => $score
+                    ]
                 );
-                throw new ValidationException([sprintf('Anti-Spam score: %d', $score)]);
+                throw new ValidationException(
+                    ['anti-spam-message' => 'Registration blocked by Anti-Spam.'],
+                    ['anti-spam-score' => sprintf('Anti-Spam score: %d', $score)]
+                );
             }
         }
     }
