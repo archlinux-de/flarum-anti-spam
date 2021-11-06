@@ -15,8 +15,6 @@ use Psr\Log\LoggerInterface;
 
 class RegistrationHandlerTest extends TestCase
 {
-    private RegistrationHandler $registrationHandler;
-
     /** @var Config|MockObject */
     private Config $config;
 

@@ -122,7 +122,7 @@ class RegistrationHandler
     {
         try {
             $response = $this->geoIpReader->get($ip);
-            if (isset($response['country']['iso_code'])) {
+            if (is_array($response) && isset($response['country']) && isset($response['country']['iso_code'])) {
                 return $response['country']['iso_code'];
             }
         } catch (\Exception $e) {
