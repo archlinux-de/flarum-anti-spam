@@ -38,26 +38,27 @@ class RegistrationHandler
         $this->logger = $logger;
 
         $antiSpamConfig = $config->offsetGet('anti_spam');
+        if (is_array($antiSpamConfig)) {
+            if (isset($antiSpamConfig['user_agent_allowed']) && $antiSpamConfig['user_agent_allowed']) {
+                $this->userAgentAllowList = $antiSpamConfig['user_agent_allowed'];
+            }
+            if (isset($antiSpamConfig['user_agent_blocked']) && $antiSpamConfig['user_agent_blocked']) {
+                $this->userAgentBlockList = $antiSpamConfig['user_agent_blocked'];
+            }
 
-        if (isset($antiSpamConfig['user_agent_allowed']) && $antiSpamConfig['user_agent_allowed']) {
-            $this->userAgentAllowList = $antiSpamConfig['user_agent_allowed'];
-        }
-        if (isset($antiSpamConfig['user_agent_blocked']) && $antiSpamConfig['user_agent_blocked']) {
-            $this->userAgentBlockList = $antiSpamConfig['user_agent_blocked'];
-        }
+            if (isset($antiSpamConfig['country_allowed']) && $antiSpamConfig['country_allowed']) {
+                $this->countryAllowList = $antiSpamConfig['country_allowed'];
+            }
+            if (isset($antiSpamConfig['country_blocked']) && $antiSpamConfig['country_blocked']) {
+                $this->countryBlockList = $antiSpamConfig['country_blocked'];
+            }
 
-        if (isset($antiSpamConfig['country_allowed']) && $antiSpamConfig['country_allowed']) {
-            $this->countryAllowList = $antiSpamConfig['country_allowed'];
-        }
-        if (isset($antiSpamConfig['country_blocked']) && $antiSpamConfig['country_blocked']) {
-            $this->countryBlockList = $antiSpamConfig['country_blocked'];
-        }
-
-        if (isset($antiSpamConfig['ip_allowed']) && $antiSpamConfig['ip_allowed']) {
-            $this->ipAllowList = $antiSpamConfig['ip_allowed'];
-        }
-        if (isset($antiSpamConfig['ip_blocked']) && $antiSpamConfig['ip_blocked']) {
-            $this->ipBlockList = $antiSpamConfig['ip_blocked'];
+            if (isset($antiSpamConfig['ip_allowed']) && $antiSpamConfig['ip_allowed']) {
+                $this->ipAllowList = $antiSpamConfig['ip_allowed'];
+            }
+            if (isset($antiSpamConfig['ip_blocked']) && $antiSpamConfig['ip_blocked']) {
+                $this->ipBlockList = $antiSpamConfig['ip_blocked'];
+            }
         }
 
         $this->geoIpReader = $geoIpReaderFactory->createReader();

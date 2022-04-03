@@ -12,7 +12,11 @@ class GeoIpReaderFactory
     public function __construct(Config $config)
     {
         $antiSpamConfig = $config->offsetGet('anti_spam');
-        if (isset($antiSpamConfig['geoip_database']) && $antiSpamConfig['geoip_database']) {
+        if (
+            is_array($antiSpamConfig)
+            && isset($antiSpamConfig['geoip_database'])
+            && $antiSpamConfig['geoip_database']
+        ) {
             $this->geoIpDatabase = $antiSpamConfig['geoip_database'];
         }
     }

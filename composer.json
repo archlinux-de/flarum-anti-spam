@@ -32,5 +32,10 @@
                 "color": "#fff"
             }
         }
+    },
+    "config": {
+        "allow-plugins": {
+            "phpstan/extension-installer": true
+        }
     }
 }
