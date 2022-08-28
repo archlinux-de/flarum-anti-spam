@@ -77,6 +77,22 @@ class ConfigTest extends TestCase
     }
 
     /**
+     * @dataProvider providerConfigArrays
+     */
+    public function testEmptyConfigArrays(string $key, string $getter): void
+    {
+        $this->flarumConfig
+            ->expects($this->once())
+            ->method('offsetGet')
+            ->with('anti_spam')
+            ->willReturn([$key => []]);
+
+        $config = new Config($this->flarumConfig);
+
+        $this->assertEquals([], $config->$getter());
+    }
+
+    /**
      * @return array<int, array<string>>
      */
     public function providerConfigArrays(): array
