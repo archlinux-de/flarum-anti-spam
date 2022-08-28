@@ -33,9 +33,12 @@ class RegistrationHandler
 
     private LoggerInterface $logger;
 
+    private bool $debug;
+
     public function __construct(Config $config, LoggerInterface $logger, GeoIpReaderFactory $geoIpReaderFactory)
     {
         $this->logger = $logger;
+        $this->debug = $config->inDebugMode();
 
         $antiSpamConfig = $config->offsetGet('anti_spam');
         if (is_array($antiSpamConfig)) {
@@ -58,6 +61,10 @@ class RegistrationHandler
             }
             if (isset($antiSpamConfig['ip_blocked']) && $antiSpamConfig['ip_blocked']) {
                 $this->ipBlockList = $antiSpamConfig['ip_blocked'];
+            }
+
+            if (isset($antiSpamConfig['debug'])) {
+                $this->debug = $antiSpamConfig['debug'];
             }
         }
 
@@ -99,22 +106,23 @@ class RegistrationHandler
                 }
             }
 
+            $logContext = [
+                    'username' => $event->user->username,
+                    'email' => $event->user->email,
+                    'ip' => $userIp ?? '-',
+                    'country' => $country ?? '-',
+                    'agent' => $userAgent ?? '-',
+                    'score' => $score
+                ];
+
             if ($score < 1) {
-                $this->logger->alert(
-                    'Anti-Spam blocked user registration',
-                    [
-                        'username' => $event->user->username,
-                        'email' => $event->user->email,
-                        'ip' => $userIp ?? '-',
-                        'country' => $country ?? '-',
-                        'agent' => $userAgent ?? '-',
-                        'score' => $score
-                    ]
-                );
+                $this->logger->info('Anti-Spam blocked user registration', $logContext);
                 throw new ValidationException(
                     ['anti-spam-message' => 'Registration blocked by Anti-Spam.'],
                     ['anti-spam-score' => sprintf('Anti-Spam score: %d', $score)]
                 );
+            } elseif ($this->debug) {
+                $this->logger->debug('Anti-Spam debug', $logContext);
             }
         }
     }

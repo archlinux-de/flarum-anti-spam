@@ -21,24 +21,27 @@ class RegistrationHandlerTest extends TestCase
     /** @var Reader|MockObject */
     private Reader $geoIpReader;
 
+    /** @var LoggerInterface|MockObject */
+    private LoggerInterface $logger;
+
     public function setUp(): void
     {
         $this->config = $this->createMock(Config::class);
         $this->geoIpReader = $this->createMock(Reader::class);
+        $this->logger = $this->createMock(LoggerInterface::class);
         unset($_SERVER['REMOTE_ADDR']);
         unset($_SERVER['HTTP_USER_AGENT']);
     }
 
     private function createRegistrationHandler(): RegistrationHandler
     {
-        $logger = $this->createMock(LoggerInterface::class);
         $geoIpReaderFactory = $this->createMock(GeoIpReaderFactory::class);
         $geoIpReaderFactory
             ->expects($this->once())
             ->method('createReader')
             ->willReturn($this->geoIpReader);
 
-        return new RegistrationHandler($this->config, $logger, $geoIpReaderFactory);
+        return new RegistrationHandler($this->config, $this->logger, $geoIpReaderFactory);
     }
 
     private function createSavingEvent(): Saving
@@ -51,6 +54,10 @@ class RegistrationHandlerTest extends TestCase
     public function testBlockByDefault(): void
     {
         $_SERVER['REMOTE_ADDR'] = '123.0.0.1';
+
+        $this->logger
+            ->expects($this->once())
+            ->method('info');
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Anti-Spam score: 0');
@@ -72,6 +79,10 @@ class RegistrationHandlerTest extends TestCase
             ->method('get')
             ->willReturn(['country' => ['iso_code' => 'DE']]);
 
+        $this->logger
+            ->expects($this->once())
+            ->method('info');
+
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Anti-Spam score: -1');
         $this->createRegistrationHandler()->handle($this->createSavingEvent());
@@ -90,6 +101,10 @@ class RegistrationHandlerTest extends TestCase
             ->method('get')
             ->willReturn(['country' => ['iso_code' => 'DE']]);
 
+        $this->logger
+            ->expects($this->never())
+            ->method('info');
+
         $this->createRegistrationHandler()->handle($this->createSavingEvent());
     }
 
@@ -101,6 +116,10 @@ class RegistrationHandlerTest extends TestCase
             ->expects($this->once())
             ->method('get')
             ->willThrowException(new Reader\InvalidDatabaseException());
+
+        $this->logger
+            ->expects($this->once())
+            ->method('info');
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Anti-Spam score: 0');
@@ -117,6 +136,10 @@ class RegistrationHandlerTest extends TestCase
             ->with('anti_spam')
             ->willReturn(['user_agent_blocked' => ['Windows']]);
 
+        $this->logger
+            ->expects($this->once())
+            ->method('info');
+
         $_SERVER['HTTP_USER_AGENT'] = 'IE/11; Windows';
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Anti-Spam score: -1');
@@ -131,6 +154,10 @@ class RegistrationHandlerTest extends TestCase
             ->with('anti_spam')
             ->willReturn(['user_agent_allowed' => ['Linux']]);
 
+        $this->logger
+            ->expects($this->never())
+            ->method('info');
+
         $_SERVER['HTTP_USER_AGENT'] = 'Firefox/120; Linux';
         $this->createRegistrationHandler()->handle($this->createSavingEvent());
     }
@@ -142,6 +169,10 @@ class RegistrationHandlerTest extends TestCase
             ->method('offsetGet')
             ->with('anti_spam')
             ->willReturn(['ip_blocked' => ['123.0.0.0/8']]);
+
+        $this->logger
+            ->expects($this->once())
+            ->method('info');
 
         $_SERVER['REMOTE_ADDR'] = '123.0.0.1';
         $this->expectException(ValidationException::class);
@@ -157,7 +188,41 @@ class RegistrationHandlerTest extends TestCase
             ->with('anti_spam')
             ->willReturn(['ip_allowed' => ['127.0.0.0/8']]);
 
+        $this->logger
+            ->expects($this->never())
+            ->method('info');
+
         $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+        $this->createRegistrationHandler()->handle($this->createSavingEvent());
+    }
+
+    public function testDebugLogging(): void
+    {
+        $this->config
+            ->expects($this->once())
+            ->method('offsetGet')
+            ->with('anti_spam')
+            ->willReturn(['debug' => true]);
+
+        $this->logger
+            ->expects($this->once())
+            ->method('debug');
+
+        $this->createRegistrationHandler()->handle($this->createSavingEvent());
+    }
+
+    public function testDebugLoggingCanBeDisabled(): void
+    {
+        $this->config
+            ->expects($this->once())
+            ->method('offsetGet')
+            ->with('anti_spam')
+            ->willReturn(['debug' => false]);
+
+        $this->logger
+            ->expects($this->never())
+            ->method('info');
+
         $this->createRegistrationHandler()->handle($this->createSavingEvent());
     }
 }
