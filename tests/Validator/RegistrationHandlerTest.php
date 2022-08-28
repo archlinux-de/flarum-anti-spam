@@ -2,9 +2,9 @@
 
 namespace ArchLinux\AntiSpam\Test\Validator;
 
+use ArchLinux\AntiSpam\Validator\Config;
 use ArchLinux\AntiSpam\Validator\GeoIpReaderFactory;
 use ArchLinux\AntiSpam\Validator\RegistrationHandler;
-use Flarum\Foundation\Config;
 use Flarum\Foundation\ValidationException;
 use Flarum\User\Event\Saving;
 use Flarum\User\User;
@@ -70,9 +70,8 @@ class RegistrationHandlerTest extends TestCase
 
         $this->config
             ->expects($this->once())
-            ->method('offsetGet')
-            ->with('anti_spam')
-            ->willReturn(['country_blocked' => ['DE']]);
+            ->method('getCountryBlockList')
+            ->willReturn(['DE']);
 
         $this->geoIpReader
             ->expects($this->once())
@@ -92,9 +91,8 @@ class RegistrationHandlerTest extends TestCase
     {
         $this->config
             ->expects($this->once())
-            ->method('offsetGet')
-            ->with('anti_spam')
-            ->willReturn(['country_allowed' => ['DE']]);
+            ->method('getCountryAllowList')
+            ->willReturn(['DE']);
 
         $this->geoIpReader
             ->expects($this->once())
@@ -132,9 +130,8 @@ class RegistrationHandlerTest extends TestCase
 
         $this->config
             ->expects($this->once())
-            ->method('offsetGet')
-            ->with('anti_spam')
-            ->willReturn(['user_agent_blocked' => ['Windows']]);
+            ->method('getUserAgentBlockList')
+            ->willReturn(['Windows']);
 
         $this->logger
             ->expects($this->once())
@@ -150,9 +147,8 @@ class RegistrationHandlerTest extends TestCase
     {
         $this->config
             ->expects($this->once())
-            ->method('offsetGet')
-            ->with('anti_spam')
-            ->willReturn(['user_agent_allowed' => ['Linux']]);
+            ->method('getUserAgentAllowList')
+            ->willReturn(['Linux']);
 
         $this->logger
             ->expects($this->never())
@@ -166,9 +162,8 @@ class RegistrationHandlerTest extends TestCase
     {
         $this->config
             ->expects($this->once())
-            ->method('offsetGet')
-            ->with('anti_spam')
-            ->willReturn(['ip_blocked' => ['123.0.0.0/8']]);
+            ->method('getIpBlockList')
+            ->willReturn(['123.0.0.0/8']);
 
         $this->logger
             ->expects($this->once())
@@ -184,9 +179,8 @@ class RegistrationHandlerTest extends TestCase
     {
         $this->config
             ->expects($this->once())
-            ->method('offsetGet')
-            ->with('anti_spam')
-            ->willReturn(['ip_allowed' => ['127.0.0.0/8']]);
+            ->method('getIpAllowList')
+            ->willReturn(['127.0.0.0/8']);
 
         $this->logger
             ->expects($this->never())
@@ -200,9 +194,12 @@ class RegistrationHandlerTest extends TestCase
     {
         $this->config
             ->expects($this->once())
-            ->method('offsetGet')
-            ->with('anti_spam')
-            ->willReturn(['debug' => true]);
+            ->method('getIpAllowList')
+            ->willReturn(['127.0.0.0/8']);
+        $this->config
+            ->expects($this->once())
+            ->method('isDebug')
+            ->willReturn(true);
 
         $this->logger
             ->expects($this->once())
@@ -215,9 +212,12 @@ class RegistrationHandlerTest extends TestCase
     {
         $this->config
             ->expects($this->once())
-            ->method('offsetGet')
-            ->with('anti_spam')
-            ->willReturn(['debug' => false]);
+            ->method('getIpAllowList')
+            ->willReturn(['127.0.0.0/8']);
+        $this->config
+            ->expects($this->once())
+            ->method('isDebug')
+            ->willReturn(false);
 
         $this->logger
             ->expects($this->never())

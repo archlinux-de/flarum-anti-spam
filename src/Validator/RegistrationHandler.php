@@ -2,10 +2,8 @@
 
 namespace ArchLinux\AntiSpam\Validator;
 
-use Flarum\Foundation\Config;
 use Flarum\Foundation\ValidationException;
 use Flarum\User\Event\Saving;
-use Illuminate\Support\Arr;
 use MaxMind\Db\Reader;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\IpUtils;
@@ -14,72 +12,12 @@ class RegistrationHandler
 {
     private Reader $geoIpReader;
 
-    /** @var string[] */
-    private array $userAgentAllowList;
-
-    /** @var string[] */
-    private array $userAgentBlockList;
-
-    /** @var string[] */
-    private array $countryAllowList;
-
-    /** @var string[] */
-    private array $countryBlockList;
-
-    /** @var string[] */
-    private array $ipAllowList;
-
-    /** @var string[] */
-    private array $ipBlockList;
-
-    private bool $debug;
-
     public function __construct(
         private Config $config,
         private LoggerInterface $logger,
         GeoIpReaderFactory $geoIpReaderFactory
     ) {
-        $antiSpamConfig = $this->getAntiSpamConfig();
-
-        $this->userAgentAllowList = $this->getStringArray($antiSpamConfig, 'user_agent_allowed');
-        $this->userAgentBlockList = $this->getStringArray($antiSpamConfig, 'user_agent_blocked');
-
-        $this->countryAllowList = $this->getStringArray($antiSpamConfig, 'country_allowed');
-        $this->countryBlockList = $this->getStringArray($antiSpamConfig, 'country_blocked');
-
-        $this->ipAllowList = $this->getStringArray(
-            $antiSpamConfig,
-            'ip_allowed',
-            ['10.0.0.0/8', '127.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '::1/128']
-        );
-        $this->ipBlockList = $this->getStringArray($antiSpamConfig, 'ip_blocked');
-
-        $this->debug = (bool)Arr::get($antiSpamConfig, 'debug', $config->inDebugMode());
-
         $this->geoIpReader = $geoIpReaderFactory->createReader();
-    }
-
-    /**
-     * @return string[]|\ArrayAccess<string,string>
-     */
-    private function getAntiSpamConfig(): array|\ArrayAccess
-    {
-        $antiSpamConfig = $this->config->offsetGet('anti_spam') ?? [];
-        assert(is_array($antiSpamConfig) || $antiSpamConfig instanceof \ArrayAccess);
-        return $antiSpamConfig;
-    }
-
-    /**
-     * @param string[]|\ArrayAccess<string,string> $array
-     * @param string $key
-     * @param string[] $default
-     * @return string[]
-     */
-    private function getStringArray(array|\ArrayAccess $array, string $key, array $default = []): array
-    {
-        $value = Arr::get($array, $key, $default);
-        assert(is_array($value));
-        return $value;
     }
 
     public function handle(Saving $event): void
@@ -132,7 +70,7 @@ class RegistrationHandler
                     ['anti-spam-message' => 'Registration blocked by Anti-Spam.'],
                     ['anti-spam-score' => sprintf('Anti-Spam score: %d', $score)]
                 );
-            } elseif ($this->debug) {
+            } elseif ($this->config->isDebug()) {
                 $this->logger->debug('Anti-Spam debug', $logContext);
             }
         }
@@ -154,22 +92,22 @@ class RegistrationHandler
 
     private function isCountryBlocked(string $country): bool
     {
-        return in_array($country, $this->countryBlockList);
+        return in_array($country, $this->config->getCountryBlockList());
     }
 
     private function isCountryAllowed(string $country): bool
     {
-        return in_array($country, $this->countryAllowList);
+        return in_array($country, $this->config->getCountryAllowList());
     }
 
     private function isIpBlocked(string $ip): bool
     {
-        return IpUtils::checkIp($ip, $this->ipBlockList);
+        return IpUtils::checkIp($ip, $this->config->getIpBlockList());
     }
 
     private function isIpAllowed(string $ip): bool
     {
-        return IpUtils::checkIp($ip, $this->ipAllowList);
+        return IpUtils::checkIp($ip, $this->config->getIpAllowList());
     }
 
     private function getUserAgent(): ?string
@@ -179,7 +117,7 @@ class RegistrationHandler
 
     private function isUserAgentBlocked(string $userAgent): bool
     {
-        foreach ($this->userAgentBlockList as $subString) {
+        foreach ($this->config->getUserAgentBlockList() as $subString) {
             if (stripos($userAgent, $subString) !== false) {
                 return true;
             }
@@ -189,7 +127,7 @@ class RegistrationHandler
 
     private function isUserAgentAllowed(string $userAgent): bool
     {
-        foreach ($this->userAgentAllowList as $subString) {
+        foreach ($this->config->getUserAgentAllowList() as $subString) {
             if (stripos($userAgent, $subString) !== false) {
                 return true;
             }

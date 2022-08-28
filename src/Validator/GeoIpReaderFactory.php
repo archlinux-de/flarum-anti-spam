@@ -2,27 +2,19 @@
 
 namespace ArchLinux\AntiSpam\Validator;
 
-use Flarum\Foundation\Config;
 use MaxMind\Db\Reader;
 
+/**
+ * @codeCoverageIgnore
+ */
 class GeoIpReaderFactory
 {
-    private string $geoIpDatabase = '/usr/share/GeoIP/GeoLite2-Country.mmdb';
-
-    public function __construct(Config $config)
+    public function __construct(private Config $config)
     {
-        $antiSpamConfig = $config->offsetGet('anti_spam');
-        if (
-            is_array($antiSpamConfig)
-            && isset($antiSpamConfig['geoip_database'])
-            && $antiSpamConfig['geoip_database']
-        ) {
-            $this->geoIpDatabase = $antiSpamConfig['geoip_database'];
-        }
     }
 
     public function createReader(): Reader
     {
-        return new Reader($this->geoIpDatabase);
+        return new Reader($this->config->getGeoIpDatabase());
     }
 }
