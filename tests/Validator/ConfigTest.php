@@ -4,13 +4,13 @@ namespace ArchLinux\AntiSpam\Test\Validator;
 
 use ArchLinux\AntiSpam\Validator\Config;
 use Flarum\Foundation\Config as FlarumConfig;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class ConfigTest extends TestCase
 {
-    /** @var FlarumConfig|MockObject */
-    private FlarumConfig $flarumConfig;
+    private FlarumConfig&MockObject $flarumConfig;
 
     public function setUp(): void
     {
@@ -60,9 +60,7 @@ class ConfigTest extends TestCase
         $this->assertTrue($config->isDebug());
     }
 
-    /**
-     * @dataProvider providerConfigArrays
-     */
+    #[DataProvider('providerConfigArrays')]
     public function testConfigArrays(string $key, string $getter): void
     {
         $this->flarumConfig
@@ -76,9 +74,7 @@ class ConfigTest extends TestCase
         $this->assertEquals(['foo'], $config->$getter());
     }
 
-    /**
-     * @dataProvider providerConfigArrays
-     */
+    #[DataProvider('providerConfigArrays')]
     public function testEmptyConfigArrays(string $key, string $getter): void
     {
         $this->flarumConfig
@@ -95,7 +91,7 @@ class ConfigTest extends TestCase
     /**
      * @return array<int, array<string>>
      */
-    public function providerConfigArrays(): array
+    public static function providerConfigArrays(): array
     {
         return [
             ['ip_allowed', 'getIpAllowList'],

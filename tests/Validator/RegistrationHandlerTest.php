@@ -15,14 +15,11 @@ use Psr\Log\LoggerInterface;
 
 class RegistrationHandlerTest extends TestCase
 {
-    /** @var Config|MockObject */
-    private Config $config;
+    private Config&MockObject $config;
 
-    /** @var Reader|MockObject */
-    private Reader $geoIpReader;
+    private Reader&MockObject $geoIpReader;
 
-    /** @var LoggerInterface|MockObject */
-    private LoggerInterface $logger;
+    private LoggerInterface&MockObject $logger;
 
     public function setUp(): void
     {
