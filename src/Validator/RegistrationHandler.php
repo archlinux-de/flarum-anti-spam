@@ -26,23 +26,22 @@ class RegistrationHandler
 
         if (!$event->user->exists) {
             $userIp = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
-            if ($userIp) {
-                $country = $this->getCountry($userIp);
-                if ($country) {
-                    if ($this->isCountryBlocked($country)) {
-                        $score--;
-                    }
-                    if ($this->isCountryAllowed($country)) {
-                        $score++;
-                    }
-                }
 
-                if ($this->isIpBlocked($userIp)) {
+            $country = $this->getCountry($userIp);
+            if ($country) {
+                if ($this->isCountryBlocked($country)) {
                     $score--;
                 }
-                if ($this->isIpAllowed($userIp)) {
+                if ($this->isCountryAllowed($country)) {
                     $score++;
                 }
+            }
+
+            if ($this->isIpBlocked($userIp)) {
+                $score--;
+            }
+            if ($this->isIpAllowed($userIp)) {
+                $score++;
             }
 
             $userAgent = $this->getUserAgent();
@@ -58,7 +57,7 @@ class RegistrationHandler
             $logContext = [
                 'username' => $event->user->username,
                 'email' => $event->user->email,
-                'ip' => $userIp ?? '-',
+                'ip' => $userIp,
                 'country' => $country ?? '-',
                 'agent' => $userAgent ?? '-',
                 'score' => $score
