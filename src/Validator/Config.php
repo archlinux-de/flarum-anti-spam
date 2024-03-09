@@ -7,29 +7,29 @@ use Illuminate\Support\Arr;
 
 class Config
 {
-    private string $geoIpDatabase;
+    private readonly string $geoIpDatabase;
 
     /** @var string[] */
-    private array $userAgentAllowList;
+    private readonly array $userAgentAllowList;
 
     /** @var string[] */
-    private array $userAgentBlockList;
+    private readonly array $userAgentBlockList;
 
     /** @var string[] */
-    private array $countryAllowList;
+    private readonly array $countryAllowList;
 
     /** @var string[] */
-    private array $countryBlockList;
+    private readonly array $countryBlockList;
 
     /** @var string[] */
-    private array $ipAllowList;
+    private readonly array $ipAllowList;
 
     /** @var string[] */
-    private array $ipBlockList;
+    private readonly array $ipBlockList;
 
-    private bool $debug;
+    private readonly bool $debug;
 
-    public function __construct(private FlarumConfig $flarumConfig)
+    public function __construct(private readonly FlarumConfig $flarumConfig)
     {
         $antiSpamConfig = $this->getAntiSpamConfig();
 

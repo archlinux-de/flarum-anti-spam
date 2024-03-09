@@ -10,11 +10,11 @@ use Symfony\Component\HttpFoundation\IpUtils;
 
 class RegistrationHandler
 {
-    private Reader $geoIpReader;
+    private readonly Reader $geoIpReader;
 
     public function __construct(
-        private Config $config,
-        private LoggerInterface $logger,
+        private readonly Config $config,
+        private readonly LoggerInterface $logger,
         GeoIpReaderFactory $geoIpReaderFactory
     ) {
         $this->geoIpReader = $geoIpReaderFactory->createReader();
