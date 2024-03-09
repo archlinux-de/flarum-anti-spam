@@ -27,6 +27,12 @@ class Config
     /** @var string[] */
     private readonly array $ipBlockList;
 
+    /** @var string[] */
+    private readonly array $emailDomainAllowList;
+
+    /** @var string[] */
+    private readonly array $emailDomainBlockList;
+
     private readonly bool $debug;
 
     public function __construct(private readonly FlarumConfig $flarumConfig)
@@ -51,6 +57,9 @@ class Config
             ['10.0.0.0/8', '127.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '::1/128']
         );
         $this->ipBlockList = $this->getStringArray($antiSpamConfig, 'ip_blocked');
+
+        $this->emailDomainAllowList = $this->getStringArray($antiSpamConfig, 'email_domain_allowed');
+        $this->emailDomainBlockList = $this->getStringArray($antiSpamConfig, 'email_domain_blocked');
 
         $this->debug = (bool)Arr::get($antiSpamConfig, 'debug', $flarumConfig->inDebugMode());
     }
@@ -142,6 +151,22 @@ class Config
     public function getIpBlockList(): array
     {
         return $this->ipBlockList;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getEmailDomainAllowList(): array
+    {
+        return $this->emailDomainAllowList;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getEmailDomainBlockList(): array
+    {
+        return $this->emailDomainBlockList;
     }
 
     public function isDebug(): bool

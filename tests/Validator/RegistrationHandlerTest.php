@@ -41,10 +41,18 @@ class RegistrationHandlerTest extends TestCase
         return new RegistrationHandler($this->config, $this->logger, $geoIpReaderFactory);
     }
 
-    private function createSavingEvent(): Saving
+    private function createSavingEvent(?string $email = null): Saving
     {
         $user = $this->createMock(User::class);
         $user->exists = false;
+
+        if ($email) {
+            $user->expects($this->atLeastOnce())
+                ->method('__get')
+                ->with('email')
+                ->willReturn($email);
+        }
+
         return new Saving($user, $this->createMock(User::class), []);
     }
 
@@ -185,6 +193,36 @@ class RegistrationHandlerTest extends TestCase
 
         $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
         $this->createRegistrationHandler()->handle($this->createSavingEvent());
+    }
+
+    public function testEmailDomainCanBeBlocked(): void
+    {
+        $this->config
+            ->expects($this->once())
+            ->method('getEmailDomainBlockList')
+            ->willReturn(['example.com']);
+
+        $this->logger
+            ->expects($this->once())
+            ->method('info');
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Anti-Spam score: -1');
+        $this->createRegistrationHandler()->handle($this->createSavingEvent(email: 'user@example.com'));
+    }
+
+    public function testEmailDomainCanBeAllowed(): void
+    {
+        $this->config
+            ->expects($this->once())
+            ->method('getEmailDomainAllowList')
+            ->willReturn(['archlinux.de']);
+
+        $this->logger
+            ->expects($this->never())
+            ->method('info');
+
+        $this->createRegistrationHandler()->handle($this->createSavingEvent(email: 'user@archlinux.de'));
     }
 
     public function testDebugLogging(): void

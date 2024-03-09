@@ -4,9 +4,11 @@ namespace ArchLinux\AntiSpam\Validator;
 
 use Flarum\Foundation\ValidationException;
 use Flarum\User\Event\Saving;
+use Flarum\User\User;
 use MaxMind\Db\Reader;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\IpUtils;
+use Symfony\Component\String\UnicodeString;
 
 class RegistrationHandler
 {
@@ -50,6 +52,16 @@ class RegistrationHandler
                     $score--;
                 }
                 if ($this->isUserAgentAllowed($userAgent)) {
+                    $score++;
+                }
+            }
+
+            $emailDomain = $this->getEmailDomain($event->user);
+            if ($emailDomain) {
+                if ($this->isEmailDomainBlocked($emailDomain)) {
+                    $score--;
+                }
+                if ($this->isEmailDomainAllowed($emailDomain)) {
                     $score++;
                 }
             }
@@ -132,5 +144,24 @@ class RegistrationHandler
             }
         }
         return false;
+    }
+
+    private function getEmailDomain(User $user): ?UnicodeString
+    {
+        if (!$user->email) {
+            return null;
+        }
+
+        return (new UnicodeString($user->email))->afterLast('@');
+    }
+
+    private function isEmailDomainBlocked(UnicodeString $emailDomain): bool
+    {
+        return $emailDomain->equalsTo($this->config->getEmailDomainBlockList());
+    }
+
+    private function isEmailDomainAllowed(UnicodeString $emailDomain): bool
+    {
+        return $emailDomain->equalsTo($this->config->getEmailDomainAllowList());
     }
 }

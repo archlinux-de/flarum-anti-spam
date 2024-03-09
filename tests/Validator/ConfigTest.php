@@ -33,6 +33,9 @@ class ConfigTest extends TestCase
 
         $this->assertEquals([], $config->getCountryAllowList());
         $this->assertEquals([], $config->getCountryBlockList());
+
+        $this->assertEquals([], $config->getEmailDomainAllowList());
+        $this->assertEquals([], $config->getEmailDomainBlockList());
     }
 
     public function testDebugDefaultsToFlarumConfig(): void
@@ -100,6 +103,8 @@ class ConfigTest extends TestCase
             ['user_agent_blocked', 'getUserAgentBlockList'],
             ['country_allowed', 'getCountryAllowList'],
             ['country_blocked', 'getCountryBlockList'],
+            ['email_domain_allowed', 'getEmailDomainAllowList'],
+            ['email_domain_blocked', 'getEmailDomainBlockList'],
         ];
     }
 

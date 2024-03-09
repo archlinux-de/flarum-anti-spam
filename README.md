@@ -24,6 +24,8 @@ The extension can be configured by adding the following keys to ``config.php``:
         'country_blocked' => ['DE'],
         'ip_allowed' => ['10.0.0.0/8', '::1'],
         'ip_blocked' => ['192.168.0.0/16'],
+        'email_domain_allowed' => ['archlinux.de'],
+        'email_domain_blocked' => ['example.com'],
     ],
 ];
 ```
