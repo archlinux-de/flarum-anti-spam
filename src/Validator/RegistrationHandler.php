@@ -24,66 +24,69 @@ class RegistrationHandler
 
     public function handle(Saving $event): void
     {
+        if ($event->user->exists) {
+            return;
+        }
+
         $score = 0;
 
-        if (!$event->user->exists) {
-            $userIp = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+        $userIp = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
 
-            $country = $this->getCountry($userIp);
-            if ($country) {
-                if ($this->isCountryBlocked($country)) {
-                    $score--;
-                }
-                if ($this->isCountryAllowed($country)) {
-                    $score++;
-                }
-            }
-
-            if ($this->isIpBlocked($userIp)) {
+        $country = $this->getCountry($userIp);
+        if ($country) {
+            if ($this->isCountryBlocked($country)) {
                 $score--;
             }
-            if ($this->isIpAllowed($userIp)) {
+            if ($this->isCountryAllowed($country)) {
                 $score++;
             }
+        }
 
-            $userAgent = $this->getUserAgent();
-            if ($userAgent) {
-                if ($this->isUserAgentBlocked($userAgent)) {
-                    $score--;
-                }
-                if ($this->isUserAgentAllowed($userAgent)) {
-                    $score++;
-                }
+        if ($this->isIpBlocked($userIp)) {
+            $score--;
+        }
+        if ($this->isIpAllowed($userIp)) {
+            $score++;
+        }
+
+        $userAgent = $this->getUserAgent();
+        if ($userAgent) {
+            if ($this->isUserAgentBlocked($userAgent)) {
+                $score--;
             }
-
-            $emailDomain = $this->getEmailDomain($event->user);
-            if ($emailDomain) {
-                if ($this->isEmailDomainBlocked($emailDomain)) {
-                    $score--;
-                }
-                if ($this->isEmailDomainAllowed($emailDomain)) {
-                    $score++;
-                }
+            if ($this->isUserAgentAllowed($userAgent)) {
+                $score++;
             }
+        }
 
-            $logContext = [
-                'username' => $event->user->username ?? '-',
-                'email' => $event->user->email ?? '-',
-                'ip' => $userIp,
-                'country' => $country ?? '-',
-                'agent' => $userAgent ?? '-',
-                'score' => $score
-            ];
-
-            if ($score < 1) {
-                $this->logger->info('Anti-Spam blocked user registration', $logContext);
-                throw new ValidationException(
-                    ['anti-spam-message' => 'Registration blocked by Anti-Spam.'],
-                    ['anti-spam-score' => sprintf('Anti-Spam score: %d', $score)]
-                );
-            } elseif ($this->config->isDebug()) {
-                $this->logger->debug('Anti-Spam debug', $logContext);
+        $emailDomain = $this->getEmailDomain($event->user);
+        if ($emailDomain) {
+            if ($this->isEmailDomainBlocked($emailDomain)) {
+                $score--;
             }
+            if ($this->isEmailDomainAllowed($emailDomain)) {
+                $score++;
+            }
+        }
+
+        $logContext = [
+            'username' => $event->user->username ?? '-',
+            'email' => $event->user->email ?? '-',
+            'ip' => $userIp,
+            'country' => $country ?? '-',
+            'agent' => $userAgent ?? '-',
+            'email_domain' => $emailDomain ?? '-',
+            'score' => $score
+        ];
+
+        if ($score < 1) {
+            $this->logger->info('Anti-Spam blocked user registration', $logContext);
+            throw new ValidationException(
+                ['anti-spam-message' => 'Registration blocked by Anti-Spam.'],
+                ['anti-spam-score' => sprintf('Anti-Spam score: %d', $score)]
+            );
+        } elseif ($this->config->isDebug()) {
+            $this->logger->debug('Anti-Spam debug', $logContext);
         }
     }
 
@@ -121,29 +124,24 @@ class RegistrationHandler
         return IpUtils::checkIp($ip, $this->config->getIpAllowList());
     }
 
-    private function getUserAgent(): ?string
+    private function getUserAgent(): ?UnicodeString
     {
-        return $_SERVER['HTTP_USER_AGENT'] ?? null;
+        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+        if (!$userAgent) {
+            return null;
+        }
+
+        return new UnicodeString($userAgent);
     }
 
-    private function isUserAgentBlocked(string $userAgent): bool
+    private function isUserAgentBlocked(UnicodeString $userAgent): bool
     {
-        foreach ($this->config->getUserAgentBlockList() as $subString) {
-            if (stripos($userAgent, $subString) !== false) {
-                return true;
-            }
-        }
-        return false;
+        return $userAgent->containsAny($this->config->getUserAgentBlockList());
     }
 
-    private function isUserAgentAllowed(string $userAgent): bool
+    private function isUserAgentAllowed(UnicodeString $userAgent): bool
     {
-        foreach ($this->config->getUserAgentAllowList() as $subString) {
-            if (stripos($userAgent, $subString) !== false) {
-                return true;
-            }
-        }
-        return false;
+        return $userAgent->containsAny($this->config->getUserAgentAllowList());
     }
 
     private function getEmailDomain(User $user): ?UnicodeString
