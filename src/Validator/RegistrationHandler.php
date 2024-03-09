@@ -55,8 +55,8 @@ class RegistrationHandler
             }
 
             $logContext = [
-                'username' => $event->user->username,
-                'email' => $event->user->email,
+                'username' => $event->user->username ?? '-',
+                'email' => $event->user->email ?? '-',
                 'ip' => $userIp,
                 'country' => $country ?? '-',
                 'agent' => $userAgent ?? '-',
