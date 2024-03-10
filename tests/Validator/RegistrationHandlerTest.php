@@ -41,10 +41,10 @@ class RegistrationHandlerTest extends TestCase
         return new RegistrationHandler($this->config, $this->logger, $geoIpReaderFactory);
     }
 
-    private function createSavingEvent(?string $email = null): Saving
+    private function createSavingEvent(?string $email = null, ?bool $exists = null): Saving
     {
         $user = $this->createMock(User::class);
-        $user->exists = false;
+        $user->exists = $exists !== null ? $exists : false;
 
         if ($email) {
             $user->expects($this->atLeastOnce())
@@ -259,5 +259,14 @@ class RegistrationHandlerTest extends TestCase
             ->method('info');
 
         $this->createRegistrationHandler()->handle($this->createSavingEvent());
+    }
+
+    public function testIgnoreExistingUsers(): void
+    {
+        $this->logger->expects($this->never())->method($this->anything());
+        $this->config->expects($this->never())->method($this->anything());
+        $this->geoIpReader->expects($this->never())->method($this->anything());
+
+        $this->createRegistrationHandler()->handle($this->createSavingEvent(exists: true));
     }
 }
