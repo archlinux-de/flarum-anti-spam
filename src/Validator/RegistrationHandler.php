@@ -74,8 +74,8 @@ class RegistrationHandler
             'email' => $event->user->email ?? '-',
             'ip' => $userIp,
             'country' => $country ?? '-',
-            'agent' => $userAgent ?? '-',
-            'email_domain' => $emailDomain ?? '-',
+            'agent' => $userAgent ? $userAgent->toString() : '-',
+            'email_domain' => $emailDomain ? $emailDomain->toString() : '-',
             'score' => $score
         ];
 
