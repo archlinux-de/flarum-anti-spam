@@ -16,7 +16,9 @@
         "phpstan/extension-installer": "^1.3",
         "phpstan/phpstan": "^1.10",
         "phpstan/phpstan-deprecation-rules": "^1.1",
-        "phpstan/phpstan-phpunit": "^1.3"
+        "phpstan/phpstan-phpunit": "^1.3",
+        "symfony/http-client": "^5.4|^6.4",
+        "symfony/filesystem": "^5.4|^6.4"
     },
     "autoload": {
         "psr-4": {

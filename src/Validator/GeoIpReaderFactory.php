@@ -4,9 +4,6 @@ namespace ArchLinux\AntiSpam\Validator;
 
 use MaxMind\Db\Reader;
 
-/**
- * @codeCoverageIgnore
- */
 class GeoIpReaderFactory
 {
     public function __construct(private readonly Config $config)
