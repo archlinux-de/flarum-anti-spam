@@ -40,7 +40,7 @@ class GeoIpReaderFactoryTest extends TestCase
         $geoIpReaderFactory = new GeoIpReaderFactory($config);
         $geoIpReader = $geoIpReaderFactory->createReader();
 
-        $this->assertInstanceOf(Reader::class, $geoIpReader);
+        $this->assertInstanceOf(Reader::class, $geoIpReader); // @phpstan-ignore method.alreadyNarrowedType
     }
 
     public function testGeoIpLookup(): void
@@ -58,6 +58,7 @@ class GeoIpReaderFactoryTest extends TestCase
 
         $this->assertIsArray($record);
         $this->assertArrayHasKey('country', $record);
+        $this->assertIsArray($record['country']);
         $this->assertArrayHasKey('iso_code', $record['country']);
         $this->assertEquals('JP', $record['country']['iso_code']);
     }

@@ -30,6 +30,7 @@ class RegistrationHandler
 
         $score = 0;
 
+        /** @var string $userIp */
         $userIp = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
 
         $country = $this->getCountry($userIp);
@@ -94,7 +95,7 @@ class RegistrationHandler
     {
         try {
             $response = $this->geoIpReader->get($ip);
-            if (is_array($response) && isset($response['country']['iso_code'])) {
+            if (is_array($response) && is_array($response['country']) && is_string($response['country']['iso_code'])) {
                 return $response['country']['iso_code'];
             }
         } catch (\Exception $e) {
@@ -126,6 +127,7 @@ class RegistrationHandler
 
     private function getUserAgent(): ?UnicodeString
     {
+        /** @var ?string $userAgent */
         $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
         if (!$userAgent) {
             return null;

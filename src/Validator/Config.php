@@ -71,7 +71,7 @@ class Config
     {
         $antiSpamConfig = $this->flarumConfig->offsetGet('anti_spam') ?? [];
         assert(is_array($antiSpamConfig) || $antiSpamConfig instanceof \ArrayAccess);
-        return $antiSpamConfig;
+        return $antiSpamConfig; // @phpstan-ignore return.type
     }
 
     /**
@@ -97,7 +97,7 @@ class Config
     {
         $value = Arr::get($array, $key, $default);
         assert(is_array($value));
-        return $value;
+        return $value; // @phpstan-ignore return.type
     }
 
     /**
