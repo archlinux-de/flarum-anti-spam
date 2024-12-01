@@ -14,5 +14,3 @@ test:
 
 test-coverage:
 	php -d zend_extension=xdebug -d xdebug.mode=coverage -d memory_limit=-1 vendor/bin/phpunit --coverage-html coverage
-
-# vim: set ft=make :
