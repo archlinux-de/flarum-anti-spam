@@ -17,7 +17,7 @@
         "phpstan/phpstan": "^2.0",
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "phpstan/phpstan-phpunit": "^2.0",
-        "symfony/http-client": "^5.4|^6.4",
+        "symfony/http-client": "^5.4.44|^6.4.12",
         "symfony/filesystem": "^5.4|^6.4"
     },
     "autoload": {
