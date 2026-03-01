@@ -16,6 +16,7 @@ use Symfony\Component\String\UnicodeString;
 
 class CheckAgainstStopForumSpamBlockLists extends AbstractCommand
 {
+    /** @param UserRepository<User> $userRepository */
     public function __construct(
         private readonly StopForumSpamService $stopForumSpamService,
         private readonly UserRepository $userRepository,
