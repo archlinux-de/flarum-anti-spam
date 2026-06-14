@@ -2,6 +2,7 @@
 
 namespace ArchLinux\AntiSpam;
 
+use ArchLinux\AntiSpam\Console\CheckAgainstStopForumSpamBlockLists;
 use ArchLinux\AntiSpam\Console\DownloadStopForumSpamBlockLists;
 use ArchLinux\AntiSpam\Validator\RegistrationHandler;
 use Flarum\Extend;
@@ -19,5 +20,6 @@ return [
         ->schedule(DownloadStopForumSpamBlockLists::class, function (Event $event) {
             $event->withoutOverlapping();
             $event->dailyAt(sprintf('%02d:%02d', rand(0, 5), rand(0, 59)));
-        }),
+        })
+        ->command(CheckAgainstStopForumSpamBlockLists::class),
 ];
