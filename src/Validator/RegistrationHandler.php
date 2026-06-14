@@ -2,6 +2,7 @@
 
 namespace ArchLinux\AntiSpam\Validator;
 
+use ArchLinux\AntiSpam\Service\StopForumSpamService;
 use Flarum\Foundation\ValidationException;
 use Flarum\User\Event\Saving;
 use Flarum\User\User;
@@ -17,6 +18,7 @@ class RegistrationHandler
     public function __construct(
         private readonly Config $config,
         private readonly LoggerInterface $logger,
+        private readonly StopForumSpamService $stopForumSpamService,
         GeoIpReaderFactory $geoIpReaderFactory
     ) {
         $this->geoIpReader = $geoIpReaderFactory->createReader();
@@ -50,6 +52,10 @@ class RegistrationHandler
             $score++;
         }
 
+        if ($this->stopForumSpamService->isSpamIp($userIp)) {
+            $score--;
+        }
+
         $userAgent = $this->getUserAgent();
         if ($userAgent) {
             if ($this->isUserAgentBlocked($userAgent)) {
@@ -68,6 +74,14 @@ class RegistrationHandler
             if ($this->isEmailDomainAllowed($emailDomain)) {
                 $score++;
             }
+
+            if ($this->stopForumSpamService->isSpamDomain($emailDomain->toString())) {
+                $score--;
+            }
+        }
+
+        if ($event->user->username && $this->stopForumSpamService->isSpamUsername($event->user->username)) {
+            $score--;
         }
 
         $logContext = [

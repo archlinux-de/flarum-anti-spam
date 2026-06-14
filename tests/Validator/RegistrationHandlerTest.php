@@ -2,6 +2,7 @@
 
 namespace ArchLinux\AntiSpam\Test\Validator;
 
+use ArchLinux\AntiSpam\Service\StopForumSpamService;
 use ArchLinux\AntiSpam\Validator\Config;
 use ArchLinux\AntiSpam\Validator\GeoIpReaderFactory;
 use ArchLinux\AntiSpam\Validator\RegistrationHandler;
@@ -21,11 +22,14 @@ class RegistrationHandlerTest extends TestCase
 
     private LoggerInterface&MockObject $logger;
 
+    private StopForumSpamService&MockObject $stopForumSpamService;
+
     public function setUp(): void
     {
         $this->config = $this->createMock(Config::class);
         $this->geoIpReader = $this->createMock(Reader::class);
         $this->logger = $this->createMock(LoggerInterface::class);
+        $this->stopForumSpamService = $this->createMock(StopForumSpamService::class);
         unset($_SERVER['REMOTE_ADDR']);
         unset($_SERVER['HTTP_USER_AGENT']);
     }
@@ -38,20 +42,20 @@ class RegistrationHandlerTest extends TestCase
             ->method('createReader')
             ->willReturn($this->geoIpReader);
 
-        return new RegistrationHandler($this->config, $this->logger, $geoIpReaderFactory);
+        return new RegistrationHandler($this->config, $this->logger, $this->stopForumSpamService, $geoIpReaderFactory);
     }
 
-    private function createSavingEvent(?string $email = null, ?bool $exists = null): Saving
+    private function createSavingEvent(?string $email = null, ?bool $exists = null, ?string $username = null): Saving
     {
         $user = $this->createMock(User::class);
         $user->exists = $exists !== null ? $exists : false;
 
-        if ($email) {
-            $user->expects($this->atLeastOnce())
-                ->method('__get')
-                ->with('email')
-                ->willReturn($email);
-        }
+        $user->method('__get')
+            ->willReturnCallback(fn($key) => match ($key) {
+                'email' => $email,
+                'username' => $username,
+                default => null,
+            });
 
         return new Saving($user, $this->createMock(User::class), []);
     }
@@ -259,6 +263,59 @@ class RegistrationHandlerTest extends TestCase
             ->method('info');
 
         $this->createRegistrationHandler()->handle($this->createSavingEvent());
+    }
+
+    public function testStopForumSpamIpCanBlockRegistration(): void
+    {
+        $_SERVER['REMOTE_ADDR'] = '123.0.0.1';
+
+        $this->stopForumSpamService
+            ->expects($this->once())
+            ->method('isSpamIp')
+            ->with('123.0.0.1')
+            ->willReturn(true);
+
+        $this->logger
+            ->expects($this->once())
+            ->method('info');
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Anti-Spam score: -1');
+        $this->createRegistrationHandler()->handle($this->createSavingEvent());
+    }
+
+    public function testStopForumSpamDomainCanBlockRegistration(): void
+    {
+        $this->stopForumSpamService
+            ->expects($this->once())
+            ->method('isSpamDomain')
+            ->with('spam.com')
+            ->willReturn(true);
+
+        $this->logger
+            ->expects($this->once())
+            ->method('info');
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Anti-Spam score: -1');
+        $this->createRegistrationHandler()->handle($this->createSavingEvent(email: 'user@spam.com'));
+    }
+
+    public function testStopForumSpamNameCanBlockRegistration(): void
+    {
+        $this->stopForumSpamService
+            ->expects($this->once())
+            ->method('isSpamUsername')
+            ->with('spammer')
+            ->willReturn(true);
+
+        $this->logger
+            ->expects($this->once())
+            ->method('info');
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Anti-Spam score: -1');
+        $this->createRegistrationHandler()->handle($this->createSavingEvent(username: 'spammer'));
     }
 
     public function testIgnoreExistingUsers(): void
