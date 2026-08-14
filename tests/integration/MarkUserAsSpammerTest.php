@@ -66,7 +66,7 @@ class MarkUserAsSpammerTest extends TestCase
             'authenticatedAs' => 1,
         ]));
 
-        $this->assertSame(204, $response->getStatusCode());
+        $this->assertSame(204, $response->getStatusCode(), (string) $response->getBody());
         $this->assertNotNull($this->database()->table('discussions')->where('id', 1)->value('hidden_at'));
         $this->assertSame(2, $this->database()->table('posts')->whereNotNull('hidden_at')->count());
         $this->assertNotNull($this->database()->table('users')->where('id', 2)->value('suspended_until'));
