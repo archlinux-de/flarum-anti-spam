@@ -71,7 +71,8 @@
         ],
         "test:unit": "phpunit -c tests/phpunit.unit.xml",
         "test:integration": "phpunit -c tests/phpunit.integration.xml",
-        "test:setup": "@php tests/integration/setup.php"
+        "test:setup": "@php tests/integration/setup.php",
+        "analyse:phpstan": "phpstan analyse --memory-limit=-1"
     },
     "scripts-descriptions": {
         "test": "Runs all tests.",
