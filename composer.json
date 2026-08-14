@@ -6,6 +6,7 @@
     "require": {
         "PHP": "^8.2",
         "flarum/core": "^1.7",
+        "flarum/suspend": "^1.7",
         "maxmind-db/reader": "^1.11.1",
         "symfony/http-foundation": "^5.4|^6.4|^7.4",
         "symfony/string": "^5.4|^6.4|^7.4"
