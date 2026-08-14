@@ -1,0 +1,8 @@
+archlinux-de-anti-spam:
+  admin:
+    permissions:
+      spamblock_users_label: Mark users as spammers
+  forum:
+    user_controls:
+      spammer_button: Mark as spammer
+      spammer_confirmation: This will hide all of this user's discussions and posts, then suspend the account. Continue?

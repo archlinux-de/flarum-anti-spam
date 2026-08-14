@@ -1,0 +1,8 @@
+archlinux-de-anti-spam:
+  admin:
+    permissions:
+      spamblock_users_label: Benutzer als Spammer markieren
+  forum:
+    user_controls:
+      spammer_button: Als Spammer markieren
+      spammer_confirmation: Dadurch werden alle Diskussionen und Beiträge dieses Benutzers verborgen und das Konto gesperrt. Fortfahren?

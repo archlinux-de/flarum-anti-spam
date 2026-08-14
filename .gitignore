@@ -1,5 +1,6 @@
 /.idea/
 /vendor/
+/js/node_modules/
 /phpunit.xml
 /composer.lock
 /coverage/
