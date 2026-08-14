@@ -1,6 +1,6 @@
 <?php
 
-namespace ArchLinux\AntiSpam\Test\Validator;
+namespace ArchLinux\AntiSpam\Tests\Validator;
 
 use ArchLinux\AntiSpam\Service\StopForumSpamService;
 use ArchLinux\AntiSpam\Validator\Config;

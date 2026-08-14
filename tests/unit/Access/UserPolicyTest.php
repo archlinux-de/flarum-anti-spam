@@ -1,6 +1,6 @@
 <?php
 
-namespace ArchLinux\AntiSpam\Test\Access;
+namespace ArchLinux\AntiSpam\Tests\Access;
 
 use ArchLinux\AntiSpam\Access\UserPolicy;
 use Flarum\User\User;

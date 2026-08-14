@@ -1,6 +1,6 @@
 <?php
 
-namespace ArchLinux\AntiSpam\Test\Service;
+namespace ArchLinux\AntiSpam\Tests\Service;
 
 use ArchLinux\AntiSpam\Service\StopForumSpamService;
 use Flarum\Foundation\Paths;

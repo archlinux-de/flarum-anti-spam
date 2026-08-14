@@ -37,11 +37,8 @@ class MarkUserAsSpammerHandler
 
         $until = Carbon::now()->addYears(self::SUSPENSION_YEARS);
 
-        /** @phpstan-ignore-next-line */
-        if ($user->suspended_until === null || $user->suspended_until->lessThan($until)) {
-            $this->bus->dispatch(new EditUser($user->id, $actor, [
-                'attributes' => ['suspendedUntil' => $until->toIso8601String()],
-            ]));
-        }
+        $this->bus->dispatch(new EditUser($user->id, $actor, [
+            'attributes' => ['suspendedUntil' => $until->toIso8601String()],
+        ]));
     }
 }

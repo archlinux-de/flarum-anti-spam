@@ -3,5 +3,6 @@
     <rule ref="PSR12"/>
     <file>src</file>
     <file>tests</file>
+    <exclude-pattern>tests/integration/setup.php</exclude-pattern>
     <file>extend.php</file>
 </ruleset>

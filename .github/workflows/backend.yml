@@ -1,0 +1,11 @@
+name: Anti-Spam PHP
+
+on: [workflow_dispatch, push, pull_request]
+
+jobs:
+  run:
+    uses: flarum/framework/.github/workflows/REUSABLE_backend.yml@main
+    with:
+      enable_backend_testing: true
+      backend_directory: .
+      php_versions: '["8.2", "8.3", "8.4", "8.5"]'
