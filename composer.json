@@ -18,7 +18,7 @@
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "phpstan/phpstan-phpunit": "^2.0",
         "symfony/http-client": "^7.0",
-        "symfony/filesystem": "^7.0"
+        "symfony/filesystem": "^8.1"
     },
     "autoload": {
         "psr-4": {
