@@ -1,6 +1,7 @@
 parameters:
 	level: max
 	paths:
+		- extend.php
 		- src
 		- tests
 	excludePaths:
