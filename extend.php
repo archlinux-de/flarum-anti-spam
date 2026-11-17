@@ -7,11 +7,7 @@ use ArchLinux\AntiSpam\Console\DownloadStopForumSpamBlockLists;
 use ArchLinux\AntiSpam\Validator\RegistrationHandler;
 use Flarum\Extend;
 use Flarum\User\Event\Saving;
-use Flarum\Extension\Extension;
-use Flarum\Foundation\Paths;
-use Flarum\Frontend\Document;
 use Illuminate\Console\Scheduling\Event;
-use Illuminate\Contracts\Container\Container;
 
 return [
     (new Extend\Event())->listen(Saving::class, RegistrationHandler::class),
